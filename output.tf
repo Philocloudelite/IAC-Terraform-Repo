@@ -15,7 +15,7 @@ output "public_ip2" {
 # what if we want just two of the pub ip in the list
 output "public_ip3" {
   description = "public ip3"
-  value       = slice(aws_instance.web[*].public_ip,0, 2)
+  value       = slice(aws_instance.web[*].public_ip,0, 1)
   sensitive   = false
 }
 

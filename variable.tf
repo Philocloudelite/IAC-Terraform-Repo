@@ -2,8 +2,8 @@
 
 
 variable "instancetype" {
-  type        = string
-  default     = "t3.micro"
+  type        = list
+  default     = ["t3.micro", "t2.micro", "t2.xlarge"]
   description = "ec2 instance type"
 }
 

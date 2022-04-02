@@ -1,5 +1,5 @@
 
-/*data "aws_ami" "golden_ami" {
+data "aws_ami" "golden_ami" {
   
   most_recent      = true
   owners           = ["amazon"]
@@ -19,7 +19,7 @@
     values = ["hvm"]
   }
 }
-*/
+
  
  resource "random_integer" "random" {
   min = 1
@@ -61,6 +61,7 @@ resource "aws_security_group" "allow_http" {
   }
 
 }
+# count is mostly used for conditions
 
 resource "aws_instance" "web" {
   count = var.create_instance ? 1 : 0
