@@ -26,3 +26,7 @@ output "ec2_arn" {
   value       = [for arn in aws_instance.web: arn.arn]
   sensitive   = false
 }
+
+  output "map_out" {
+    value = {for i, instance_id in aws_instance.web: i => instance_id.private_ip}
+}
