@@ -41,3 +41,6 @@ variable database_sub {
   description = " list of database az's "
 }
 
+variable "pub_main_rt" {
+  
+}
