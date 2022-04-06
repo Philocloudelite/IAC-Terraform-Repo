@@ -42,3 +42,42 @@ resource "aws_subnet" database_sub2 {
   cidr_block = var.cidr_database[1]
   availability_zone = var.database_sub[1]
 }
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = local.vpc_id
+
+}
+
+resource "aws_main_route_table_association" "pub_rt" {
+  vpc_id         = local.vpc_id
+  route_table_id = aws_route_table.bar.id
+}
+
+
+resource "aws_route_table" "pub_rt" {
+  vpc_id = local.vpc_id
+
+  route {
+    cidr_block = "10.0.1.0/24"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+}
+
+resource "aws_route_table" "priv_rt" {
+  vpc_id = local.vpc_id
+
+  route {
+    cidr_block = "10.0.1.0/24"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+}
+
+resource "aws_route_table" "database_rt" {
+  vpc_id = local.vpc_id
+
+  route {
+    cidr_block = "10.0.1.0/24"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+}
+
