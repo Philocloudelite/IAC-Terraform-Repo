@@ -5,9 +5,10 @@ variable aws_region {
   description = "aws region"
 }
 
+
 variable cidr_pubsubnet {
   type        = list
-  default     = ["10.0.0.0/24", "10.0.2.0/24"]
+  default     = ["10.0.0.0/24", "10.0.2.0/24", "10.0.4.0/24"]
   description = "list of public cidrs "
 }
 
@@ -23,21 +24,26 @@ variable cidr_database {
   description = "list of database cidrs"
 }
 
-variable pub_az {
-  type        = list
-  default     = ["us-east-1a","us-east-1b"]
-  description = " list of public az's "
+# variable pub_az {
+#   type        = list
+#   default     = ["us-east-1a","us-east-1b"]
+#   description = " list of public az's "
+# }
+
+# variable priv_sub {
+#   type        = list
+#   default     = ["us-east-1c","us-east-1a"]
+#   description = " list of private az's "
+# } 
+
+# variable database_sub {
+#   type        = list
+#   default     = ["us-east-1b","us-east-1c"]
+#   description = " list of database az's "
+# }
+
+variable "create_vpc" {
+  type = bool
+  default = true
+  description = "create vpc"
 }
-
-variable priv_sub {
-  type        = list
-  default     = ["us-east-1c","us-east-1a"]
-  description = " list of private az's "
-} 
-
-variable database_sub {
-  type        = list
-  default     = ["us-east-1b","us-east-1c"]
-  description = " list of database az's "
-}
-
