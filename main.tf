@@ -12,12 +12,12 @@ locals {
     application_owner       = "kojitechs.com"
     vpc                     = "WEB"
     cell_name               = "WEB"
-    component_name          = "IAC-TERRAFORM-REPO"
-
+    component_name          = var.component_name
   }
-  vpc_id = try(aws_vpc.Kojitechs[0].id, "")
+
+  vpc_id     = try(aws_vpc.Kojitechs[0].id, "")
   create_vpc = var.create_vpc
-  azs = data.aws_availability_zones.available.names
+  azs        = data.aws_availability_zones.available.names
 }
 
 data "aws_availability_zones" "available" {
@@ -26,11 +26,11 @@ data "aws_availability_zones" "available" {
 
 #  To access a resource id of a single instance like aws_vpc.Kojitechs.id
 # To access a resource id of a count objeect is df aws_vpc.Kojitechs[0].id
-resource "aws_vpc" Kojitechs {
+resource "aws_vpc" "Kojitechs" {
   count = local.create_vpc ? 1 : 0
 
-  cidr_block = "10.0.0.0/16"
-  enable_dns_support = false
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = false
   enable_dns_hostnames = false
 
   tags = {
@@ -38,8 +38,8 @@ resource "aws_vpc" Kojitechs {
   }
 }
 
- resource "aws_internet_gateway" "igw" {
-   count = local.create_vpc ? 1 : 0
+resource "aws_internet_gateway" "igw" {
+  count = local.create_vpc ? 1 : 0
 
   vpc_id = local.vpc_id
 
@@ -49,18 +49,18 @@ resource "aws_vpc" Kojitechs {
 }
 
 # creating public subnet
-resource "aws_subnet" public_subnet {
+resource "aws_subnet" "public_subnet" {
   count = local.create_vpc ? length(var.cidr_pubsubnet) : 0
 
-  vpc_id     = local.vpc_id
-  cidr_block = var.cidr_pubsubnet[count.index]
-  map_public_ip_on_launch = true 
-  availability_zone = local.azs[count.index]
+  vpc_id                  = local.vpc_id
+  cidr_block              = var.cidr_pubsubnet[count.index]
+  map_public_ip_on_launch = true
+  availability_zone       = local.azs[count.index]
 
   tags = {
     "Name" = "public_subnet_${count.index + 1}"
   }
-} 
+}
 
 # Splat operator
 
@@ -77,44 +77,44 @@ output "pub_deprecated" {
 # for loop 
 
 output "pub_id_with_forloop" {
-  value = [for ids in aws_subnet.public_subnet: ids.id]
+  value = [for ids in aws_subnet.public_subnet : ids.id]
 }
 
 
 #creating private subnet
 
-resource "aws_subnet" priv_sub {
+resource "aws_subnet" "priv_sub" {
   count = local.create_vpc ? length(var.cidr_privsubnet) : 0
 
-  vpc_id     = local.vpc_id
-  cidr_block = var.cidr_privsubnet[count.index]
-  map_public_ip_on_launch = true 
-  availability_zone = local.azs[count.index]
+  vpc_id                  = local.vpc_id
+  cidr_block              = var.cidr_privsubnet[count.index]
+  map_public_ip_on_launch = true
+  availability_zone       = local.azs[count.index]
 
-   tags = {
+  tags = {
     "Name" = "priva-sub-${local.azs[count.index]}"
   }
 
-} 
+}
 
 # creating dababase subnet
-resource "aws_subnet" database_sub {
+resource "aws_subnet" "database_sub" {
   count = local.create_vpc ? length(var.cidr_database) : 0
 
-  vpc_id     = local.vpc_id
-  cidr_block = var.cidr_database[count.index]
+  vpc_id            = local.vpc_id
+  cidr_block        = var.cidr_database[count.index]
   availability_zone = local.azs[count.index]
 
   tags = {
     "Name" = "database-sub-${local.azs[count.index]}"
   }
-} 
+}
 
 # creating routes
 resource "aws_route_table" "route_table" {
   vpc_id = local.vpc_id
 
-  route { 
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw[0].id
   }
@@ -143,26 +143,26 @@ resource "aws_route_table_association" "route_tables_ass" {
 
 
 # creating the default route table
-resource "aws_default_route_table" "default_route" { 
+resource "aws_default_route_table" "default_route" {
   count = local.create_vpc ? 1 : 0
 
   default_route_table_id = try(aws_vpc.Kojitechs[0].default_route_table_id, "")
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.ngw_1[0].id
   }
 }
 
 resource "aws_eip" "eip" {
-   count = local.create_vpc ? 1 : 0
-  vpc      = true
+  count      = local.create_vpc ? 1 : 0
+  vpc        = true
   depends_on = [aws_internet_gateway.igw]
-    
+
 }
 
 # creating nat gateway
-resource "aws_nat_gateway" "ngw_1" { 
+resource "aws_nat_gateway" "ngw_1" {
   count = local.create_vpc ? 1 : 0
 
   allocation_id = aws_eip.eip[0].id
@@ -170,7 +170,7 @@ resource "aws_nat_gateway" "ngw_1" {
 
   depends_on = [aws_internet_gateway.igw]
 
-    tags = {
+  tags = {
     Name = "gw_NAT"
   }
 }
