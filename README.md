@@ -1,6 +1,6 @@
 # IAC-Terraform-Repo
 
-# Using Terraform to set up baston connection 
+## Using Terraform to set up baston connection 
 
 
 
