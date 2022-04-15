@@ -18,14 +18,14 @@ resource "aws_instance" "web" {
   user_data              = file("${path.module}/template/app1-http.sh")
   vpc_security_group_ids = [local.vpc_security_group_ids[count.index]]
   iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
-  key_name               = aws_key_pair.basstion_instance.id
+  key_name               = aws_key_pair.bastion_instance.id
 
   tags = {
     Name = local.Name[count.index]
   }
 }
 
-resource "aws_key_pair" "basstion_instance" {
+resource "aws_key_pair" "bastion_instance" {
   key_name   = "bastion_instance"
   public_key = file("C:\\Users\\Owner\\.ssh\\bastion_instance.pub")
 }
