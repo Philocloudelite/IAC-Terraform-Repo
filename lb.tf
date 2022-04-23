@@ -1,18 +1,20 @@
 resource "aws_lb" "kojitechs-lb" {
-  name               = format("%s-%s", var.component_name, "kojitechs-lb")
+  name               = format("%s-%s", var.component-name, "kojitechs-lb")
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb_sg.id]
-  subnets            = aws_subnet.public_subnet.*.id
+  security_groups    = [aws_security_group.web.id]
+  subnets            = aws_subnet.public_subnet.*.id  # [for subnet in aws_subnet.public : subnet.id]
+
 
   tags = {
-    Name = format("%s-%s", var.component_name, "kojitechs-lb")
+    Name = format("%s-%s", var.component-name, "kojitechs-lb")
   }
 }
 
 resource "aws_lb_target_group" "kojitech-targetgroup" {
-  name     = format("%s-%s", var.component_name, "tg")
-  port     = var.http_port
+  count             = var.create_instance ? length(local.Name) : 0
+  name     = format("%s-%s", var.component-name, "tg")
+  port     = var.app_port
   protocol = "HTTP"
   vpc_id   = local.vpc_id 
 
@@ -29,15 +31,16 @@ resource "aws_lb_target_group" "kojitech-targetgroup" {
 }
 
 resource "aws_lb_listener" "front_end" {
+  count             = 1
   load_balancer_arn = aws_lb.kojitechs-lb.arn
   port              = var.https_port
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  #certificate_arn   = ""
+  certificate_arn   = module.acm.acm_certificate_arn
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.kojitech-targetgroup.arn
+    target_group_arn = aws_lb_target_group.kojitechs_tg[count.index].arn
   }
 }
 

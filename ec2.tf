@@ -5,13 +5,40 @@ locals {
   vpc_security_group_ids = [aws_security_group.web.id, aws_security_group.app.id]
 }
 
-output "public_ip" {
-  value = format("http://%s", aws_instance.web[0].public_ip)
+# output "public_ip" {
+#   value = format("http://%s", aws_instance.web[0].public_ip)
+# }
+
+data "aws_secretsmanager_secret_version" "mysecret" {
+  secret_id     = module.aurora.secrets_version.secret_id
 }
 
-resource "aws_instance" "web" {
-  count = 2
 
+data "aws_ami" "amzlinux2" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-gp2"]
+  }
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+
+
+resource "aws_instance" "web" {
+  ccount                = var.create_instance ? length(local.Name) : 0
   ami                    = "ami-0c02fb55956c7d316" # use datasource to fetch
   instance_type          = "t2.micro"
   subnet_id              = local.subnet_id[count.index]
@@ -31,7 +58,7 @@ resource "aws_key_pair" "bastion_instance" {
 }
 
 resource "aws_ssm_parameter" "ssm_kp" {
-  name  = format("%s-%s", var.component_name, "ssm-kp")
+  name  = format("%s-%s", var.component-name, "ssm-kp")
   type  = "SecureString"
   value = " "
   lifecycle {
@@ -39,4 +66,11 @@ resource "aws_ssm_parameter" "ssm_kp" {
       value,
     ]
   }
+}
+
+resource "aws_lb_target_group_attachment" "test" {
+  count             = var.create_instance ? length(local.Name) : 0
+  target_group_arn = aws_lb_target_group.kojitechs_tg.arn
+  target_id        = aws_instance.web[count.index].id
+  port             = var.app_port
 }

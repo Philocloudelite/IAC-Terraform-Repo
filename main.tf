@@ -12,7 +12,7 @@ locals {
     application_owner       = "kojitechs.com"
     vpc                     = "WEB"
     cell_name               = "WEB"
-    component_name          = var.component_name
+    component_name          = var.component-name
   }
 
   vpc_id     = try(aws_vpc.Kojitechs[0].id, "")
@@ -30,8 +30,8 @@ resource "aws_vpc" "Kojitechs" {
   count = local.create_vpc ? 1 : 0
 
   cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = false
-  enable_dns_hostnames = false
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     "Name" = "kojitechs"
@@ -40,7 +40,6 @@ resource "aws_vpc" "Kojitechs" {
 
 resource "aws_internet_gateway" "igw" {
   count = local.create_vpc ? 1 : 0
-
   vpc_id = local.vpc_id
 
   tags = {
@@ -50,10 +49,9 @@ resource "aws_internet_gateway" "igw" {
 
 # creating public subnet
 resource "aws_subnet" "public_subnet" {
-  count = local.create_vpc ? length(var.cidr_pubsubnet) : 0
-
+  count                   = local.create_vpc ? length(var.pub_subnetcidr) : 0
   vpc_id                  = local.vpc_id
-  cidr_block              = var.cidr_pubsubnet[count.index]
+  cidr_block              = var.pub_subnetcidr[count.index]
   map_public_ip_on_launch = true
   availability_zone       = local.azs[count.index]
 
@@ -64,9 +62,9 @@ resource "aws_subnet" "public_subnet" {
 
 # Splat operator
 
-output "pub_subnet_id" {
-  value = aws_subnet.public_subnet[*].id
-}
+# output "pub_subnet_id" {
+#   value = aws_subnet.public_subnet[*].id
+# }
 
 # Deprecated 
 
@@ -84,10 +82,9 @@ output "pub_id_with_forloop" {
 #creating private subnet
 
 resource "aws_subnet" "priv_sub" {
-  count = local.create_vpc ? length(var.cidr_privsubnet) : 0
-
+  count                   = local.create_vpc ? length(var.private_subnetcidr) : 0
   vpc_id                  = local.vpc_id
-  cidr_block              = var.cidr_privsubnet[count.index]
+  cidr_block              = var.private_subnetcidr[count.index]
   map_public_ip_on_launch = true
   availability_zone       = local.azs[count.index]
 
@@ -99,10 +96,9 @@ resource "aws_subnet" "priv_sub" {
 
 # creating dababase subnet
 resource "aws_subnet" "database_sub" {
-  count = local.create_vpc ? length(var.cidr_database) : 0
-
+  count             = local.create_vpc ? length(var.database_subnetcidr) : 0
   vpc_id            = local.vpc_id
-  cidr_block        = var.cidr_database[count.index]
+  cidr_block        = var.database_subnetcidr[count.index]
   availability_zone = local.azs[count.index]
 
   tags = {
@@ -130,12 +126,12 @@ resource "aws_route_table" "route_table" {
 #   }
 # }
 
-# itirate!!!
+# iterate!!!
 
 # rout table association
 
 resource "aws_route_table_association" "route_tables_ass" {
-  count = local.create_vpc ? length(var.cidr_pubsubnet) : 0
+  count = local.create_vpc ? length(var.pub_subnetcidr) : 0
 
   subnet_id      = aws_subnet.public_subnet.*.id[count.index]
   route_table_id = aws_route_table.route_table.id

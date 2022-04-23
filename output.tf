@@ -5,7 +5,7 @@
 #   sensitive   = false
 # }
 
-# # fetching all of the public_ip in the list
+# # fetching all of the public_ip in the list /// what if we want two pub ip in the list we use slice
 # output "public_ip2" {
 #   description = "public ip2"
 #   value       = [aws_instance.web[*].public_ip]
@@ -26,3 +26,8 @@
 #   value       = [for arn in aws_instance.web: arn.arn]
 #   sensitive   = false
 # }
+
+
+output "public_ip" {
+  value = format("http://%s", aws_instance.web[0].public_ip)
+}
