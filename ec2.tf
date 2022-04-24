@@ -1,13 +1,13 @@
+ 
 
 locals {
-  subnet_id              = [aws_subnet.public_subnet[0].id, aws_subnet.priv_sub[0].id]
-  Name                   = ["web_instance", "app_instance"]
-  vpc_security_group_ids = [aws_security_group.web.id, aws_security_group.app.id]
-}
+  subnet_id = [aws_subnet.priv_subnet[0].id, aws_subnet.priv_subnet[1].id]
+  Name      = ["app1_instance", "app2_instance"]
 
-# output "public_ip" {
-#   value = format("http://%s", aws_instance.web[0].public_ip)
-# }
+  #vpc_security_group_ids = [aws_security_group.web.id, aws_security_group.app.id]
+  mysql = jsondecode(data.aws_secretsmanager_secret_version.mysecret.secret_string) 
+
+}
 
 data "aws_secretsmanager_secret_version" "mysecret" {
   secret_id     = module.aurora.secrets_version.secret_id
@@ -38,39 +38,46 @@ data "aws_ami" "amzlinux2" {
 
 
 resource "aws_instance" "web" {
-  ccount                = var.create_instance ? length(local.Name) : 0
-  ami                    = "ami-0c02fb55956c7d316" # use datasource to fetch
+  depends_on = [module.aurora]
+  count                  = var.create_instance ? length(local.Name) : 0
+  ami                    = data.aws_ami.amzlinux2.id
   instance_type          = "t2.micro"
-  subnet_id              = local.subnet_id[count.index]
-  user_data              = file("${path.module}/template/app1-http.sh")
-  vpc_security_group_ids = [local.vpc_security_group_ids[count.index]]
+  subnet_id              = local.subnet_id[count.index] 
   iam_instance_profile   = aws_iam_instance_profile.instance_profile.name
   key_name               = aws_key_pair.bastion_instance.id
+  user_data = templatefile("${path.module}/template/registrationapp.tmpl",
+
+    {
+      endpoint    = local.mysql["endpoint"]
+      port        = local.mysql["port"]
+      db_name     = local.mysql["dbname"]
+      db_user     = local.mysql["username"]
+      db_password = local.mysql["password"]
+    }
+
+  )
 
   tags = {
     Name = local.Name[count.index]
   }
 }
 
+
 resource "aws_key_pair" "bastion_instance" {
   key_name   = "bastion_instance"
-  public_key = file("C:\\Users\\Owner\\.ssh\\bastion_instance.pub")
+  public_key = file("./template/bastion_instance.pub")
 }
+
 
 resource "aws_ssm_parameter" "ssm_kp" {
   name  = format("%s-%s", var.component-name, "ssm-kp")
   type  = "SecureString"
   value = " "
+
   lifecycle {
     ignore_changes = [
       value,
     ]
   }
-}
 
-resource "aws_lb_target_group_attachment" "test" {
-  count             = var.create_instance ? length(local.Name) : 0
-  target_group_arn = aws_lb_target_group.kojitechs_tg.arn
-  target_id        = aws_instance.web[count.index].id
-  port             = var.app_port
 }

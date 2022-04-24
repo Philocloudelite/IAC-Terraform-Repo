@@ -2,13 +2,12 @@
 variable "aws_region" {
   type        = string
   default     = "us-east-1"
-  description = "aws region"
+  description = "aws-region"
 }
-
-variable "create_vpc" {
+variable "creatvpc" {
   type        = bool
-  default     = true
-  description = "create vpc"
+  default     = "true"
+  description = "creat vpc"
 }
 
 variable "create_instance" {
@@ -35,6 +34,13 @@ variable "database_subnetcidr" {
   default     = ["10.0.5.0/24", "10.0.7.0/24"]
   description = "list of database cidr"
 }
+variable "app_port" {
+  default = 8080
+  type = number
+  description = "for app_port"
+}
+
+
 variable "http_port" {
   default     = 80
   type        = number
@@ -58,14 +64,6 @@ variable "master_username" {
   default     = "dbadmin"
   description = "db user name"
 }
-
-variable "app_port" {
-  default = 8080
-  type = number
-  description = 
-  
-}
-
 
 # variable "pub_az1" {
 #   type = list

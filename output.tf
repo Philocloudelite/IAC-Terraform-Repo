@@ -1,33 +1,35 @@
-# # Fetching Just One pub ip in the list
+# # fetching just one pub ip in the list
 # output "public_ip" {
-#   description = "public ip"
-#   value       = aws_instance.web[0].public_ip 
+#   description = "public_ip"
+#   value       = slice(aws_instance.terraform[*].public_ip, 0, 1)
 #   sensitive   = false
+
 # }
 
-# # fetching all of the public_ip in the list /// what if we want two pub ip in the list we use slice
-# output "public_ip2" {
-#   description = "public ip2"
-#   value       = [aws_instance.web[*].public_ip]
-#   sensitive   = false
-# }
+# # # fetching all pub ip in the list /// what if we want two pub ip in the list we use slice
+# # output "public_ip2" {
+# #   description = "public_ip"
+# #   value       = aws_instance.terraform[*].public_ip
+# #   sensitive   = false
 
-# # what if we want just two of the pub ip in the list
-# output "public_ip3" {
-#   description = "public ip3"
-#   value       = slice(aws_instance.web[*].public_ip,0, )
-#   sensitive   = false
-# }
-
-# # For loop with output 
-
+# # }
+# # output "public_dns" {
+# #   description = "public_dns"
+# #   value = aws_instance.terraform[*].public_dns
+# #   sensitive = true
+# # }
+# #for loop with output
 # output "ec2_arn" {
-#   description = "ec2 arn's"
-#   value       = [for arn in aws_instance.web: arn.arn]
+#   description = "arn"
+#   value       = [for arn in aws_instance.terraform : arn.arn]
 #   sensitive   = false
 # }
-
 
 output "public_ip" {
-  value = format("http://%s", aws_instance.web[0].public_ip)
+  value =  aws_instance.web.*.public_ip
+}
+
+output "dns_name" {
+  description = "cLICK on this link to connect to our application"
+  value = format("https://%s", aws_route53_record.www.name)
 }

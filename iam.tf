@@ -1,7 +1,8 @@
-
 resource "aws_iam_role" "ssm_for_ec2" {
-  name = format("%s-%s", var.component-name, "ssm_for_ec2")
+  name = format("%s_%s", var.component-name, "ssm_for_ec2")
 
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -22,13 +23,11 @@ resource "aws_iam_role" "ssm_for_ec2" {
 }
 
 resource "aws_iam_instance_profile" "instance_profile" {
-  name = format("%s-%s", var.component-name, "instance_profile")
+  name = format("%s_%s", var.component-name, "instance_profile")
   role = aws_iam_role.ssm_for_ec2.name
 }
-
-
 resource "aws_iam_policy" "policy" {
-  name        = format("%s-%s", var.component-name, "ssm_fleet_policy")
+  name        = format("%s_%s", var.component-name, "ssm_fleet_policy")
   description = "Access  policy of ec2 to ssm fleet"
   policy      = <<EOF
 {
@@ -72,7 +71,6 @@ resource "aws_iam_policy" "policy" {
 }
 EOF
 }
-
 
 resource "aws_iam_role_policy_attachment" "ssm_attach_role" {
   role       = aws_iam_role.ssm_for_ec2.name
