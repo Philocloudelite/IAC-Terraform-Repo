@@ -1,7 +1,7 @@
 
 variable "s3_name" {
-    type = list
-    description = "for my s3 bucket"
+  type        = list(any)
+  description = "for my s3 bucket"
 }
 variable "aws_region" {
   type        = string

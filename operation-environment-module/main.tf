@@ -18,14 +18,14 @@ locals {
 
 
 resource "aws_s3_bucket" "iacs3_bucket" {
-    count                  = length(var.s3_name)
+  count  = length(var.s3_name)
   bucket = var.s3_name[count.index]
-   versioning {
+  versioning {
     enabled = true
   }
 
   tags = {
-    Name        = var.s3_name[count.index]
+    Name = var.s3_name[count.index]
   }
 }
 
